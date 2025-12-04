@@ -1448,8 +1448,6 @@ function setRadarMode(kind) {
   radarVariable = kind;
   applyRadarGridModeClass();
    updateRadarLegend();
-   updateLegend();
-
 
   if (radarTabRain && radarTabWind && radarTabTemp) {
     radarTabRain.classList.remove("radar-tab-active");
@@ -1471,6 +1469,7 @@ function setRadarMode(kind) {
   }
 
   resetRadarTimelineToNow();
+   updateLegend();
 }
 
 function openRadarOverlay() {
@@ -1490,6 +1489,8 @@ function openRadarOverlay() {
     }
 
     applyRadarGridModeClass();
+     updateLegend();
+
 
     if (radarTemporalMode === "real" && radarVariable === "rain") {
       loadRainviewerMeta().then(() => {
