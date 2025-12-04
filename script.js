@@ -1195,7 +1195,7 @@ if (!selectedCity || !selectedCity.lat || !selectedCity.lon) {
 
   if (!radarBaseLayer) {
     radarBaseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 12,
+      maxZoom: 11,
     });
     radarBaseLayer.addTo(radarMapInstance);
   }
@@ -1213,7 +1213,7 @@ function ensureRadarMap() {
   // 2. Fond de carte OSM, permet zoom très proche ET vue monde
   if (!radarBaseLayer) {
     radarBaseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18, // 🔥 autorise zoom ville précis
+      maxZoom: 15, // 🔥 zoom ville
       minZoom: 2,  // 🌍 permet de dézoomer jusqu'au monde
     });
     radarBaseLayer.addTo(radarMapInstance);
