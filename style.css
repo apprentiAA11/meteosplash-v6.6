@@ -1894,3 +1894,44 @@ body.theme-night .radar-play-button {
   background: rgba(18, 20, 56, 0.98);
   color: #eef0ff;
 }
+/* ---- LÉGENDES RADAR ---- */
+
+.radar-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.legend-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.legend-group.hidden {
+  display: none;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Pluie */
+.rain-1 { background: #4a9dff; }
+.rain-2 { background: #f5d034; }
+.rain-3 { background: #ff4a4a; }
+
+/* Vent */
+.wind-1 { background: #35d69c; }
+.wind-2 { background: #ff9a3c; }
+.wind-3 { background: #ff4a4a; }
+
+/* Températures */
+.temp-1 { background: #0f172a; }
+.temp-2 { background: #fbbf24; }
+.temp-3 { background: #b91c1c; }
+
