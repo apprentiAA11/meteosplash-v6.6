@@ -1396,6 +1396,18 @@ function updateRadarLegend() {
   if (radarVariable === "wind") lw.classList.remove("hidden");
   if (radarVariable === "temp") lt.classList.remove("hidden");
 }
+function updateLegend() {
+  const container = document.getElementById("legend-container");
+  if (!container) return;
+
+  container.classList.remove("hidden");
+
+  const groups = container.querySelectorAll(".legend-group");
+  groups.forEach(g => g.classList.add("hidden"));
+
+  const active = container.querySelector(`[data-type="${radarVariable}"]`);
+  if (active) active.classList.remove("hidden");
+}
 
 function resetRadarTimelineToNow() {
   if (!selectedCity) return;
@@ -1436,6 +1448,8 @@ function setRadarMode(kind) {
   radarVariable = kind;
   applyRadarGridModeClass();
    updateRadarLegend();
+   updateLegend();
+
 
   if (radarTabRain && radarTabWind && radarTabTemp) {
     radarTabRain.classList.remove("radar-tab-active");
