@@ -1191,7 +1191,7 @@ if (!selectedCity || !selectedCity.lat || !selectedCity.lon) {
     return;
 }
 
-  radarMapInstance.setView([selectedCity.lat, selectedCity.lon], 15);
+  radarMapInstance.setView([selectedCity.lat, selectedCity.lon], 12);
 
   if (!radarBaseLayer) {
     radarBaseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
