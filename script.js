@@ -1185,6 +1185,12 @@ function ensureRadarMap() {
       attributionControl: false,
     });
   }
+   // Si aucune ville sélectionnée → vue monde
+if (!selectedCity || !selectedCity.lat || !selectedCity.lon) {
+    radarMapInstance.setView([20, 0], 3); // 🌍 zoom monde
+    return;
+}
+
   radarMapInstance.setView([selectedCity.lat, selectedCity.lon], 15);
 
   if (!radarBaseLayer) {
