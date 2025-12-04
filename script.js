@@ -5,7 +5,7 @@
 
 /* --------------------------------------------------------------------------
    1. SELECTEURS + ÉTATS GLOBAUX
--------------------------------------------------------------------------- */
+--------------------------------------------------------------------------- */
 
 const cityInput = document.getElementById("city-input");
 const autocompleteList = document.getElementById("autocomplete-list");
