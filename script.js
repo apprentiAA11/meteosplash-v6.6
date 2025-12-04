@@ -147,7 +147,6 @@ function applyWeatherBackground(code) {
   else if ([80, 81, 82].includes(code)) cls = "weather-rain";
   else if ([95, 96, 99].includes(code)) cls = "weather-storm";
 
-  // si mode manuel (jour/nuit), ne pas écraser
   if (themeMode !== "auto") {
     return;
   }
@@ -168,15 +167,16 @@ function applyTheme() {
   if (themeMode === "auto") {
     const hour = new Date().getHours();
     const baseTheme = hour >= 21 || hour < 7 ? "theme-night" : "theme-day";
-    // On laisse applyWeatherBackground gérer la classe météo
-    if (!body.classList.contains("weather-clear") &&
-        !body.classList.contains("weather-cloudy") &&
-        !body.classList.contains("weather-rain") &&
-        !body.classList.contains("weather-snow") &&
-        !body.classList.contains("weather-storm")) {
+
+    if (
+      !body.classList.contains("weather-clear") &&
+      !body.classList.contains("weather-cloudy") &&
+      !body.classList.contains("weather-rain") &&
+      !body.classList.contains("weather-snow") &&
+      !body.classList.contains("weather-storm")
+    ) {
       body.className = baseTheme;
     } else {
-      // on conserve la classe météo et on ajuste juste theme-*
       body.classList.remove("theme-day", "theme-night");
       body.classList.add(baseTheme);
     }
@@ -188,9 +188,8 @@ function applyTheme() {
     document.body.classList.add("theme-night");
   }
 
-  // on redessine les graphes si besoin :
   if (lastForecastData) {
-    // rien de spécifique ici, les prochains graphes utiliseront le bon thème
+    // les prochains graphes utiliseront le bon thème
   }
 }
 
@@ -404,7 +403,6 @@ if (btnGeolocate) {
     setGeolocateLoading();
 
     if (!navigator.geolocation) {
-      // pas de GPS → fallback IP direct
       geolocateByIp();
       return;
     }
@@ -433,13 +431,11 @@ if (btnGeolocate) {
           setGeolocateSuccess(cityName);
         } catch (err) {
           console.error("Erreur géocodage inverse", err);
-          // si reverse échoue → fallback IP
           geolocateByIp();
         }
       },
       async (err) => {
         console.warn("Erreur géolocalisation navigateur", err);
-        // refus / timeout / erreur → fallback IP
         geolocateByIp();
       },
       { enableHighAccuracy: true, timeout: 7000 }
@@ -452,7 +448,6 @@ if (btnGeolocate) {
 -------------------------------------------------------------------------- */
 
 function addCity(ci) {
-  /* éviter doublon (même ville / coordonnées proches) */
   const existingIndex = cities.findIndex(
     (x) =>
       x.name === ci.name &&
@@ -461,7 +456,6 @@ function addCity(ci) {
   );
 
   if (existingIndex !== -1) {
-    // si c'est une localisation actuelle, on transfère le flag
     if (ci.isCurrentLocation) {
       cities.forEach((c) => {
         c.isCurrentLocation = false;
@@ -497,13 +491,14 @@ function removeCity(idx) {
   renderCityList();
   saveCities();
 
-  if (cities.length > 0) loadCityWeather(cities[0]);
-  else {
+  if (cities.length > 0) {
+    loadCityWeather(cities[0]);
+  } else {
     detailsTitle.textContent = "Aucune ville sélectionnée";
     detailsSubtitle.textContent = "Ajoute une ville ou utilise “Ma position”.";
     detailsCurrent.innerHTML = "";
-    windLineMain.textContent = "Vent : —";
-    windLineSub.textContent = "Rafales : —";
+    if (windLineMain) windLineMain.textContent = "Vent : —";
+    if (windLineSub) windLineSub.textContent = "Rafales : —";
     forecastList.innerHTML = "";
     applyWeatherBackground(null);
     updateTip(null);
@@ -538,7 +533,6 @@ function renderCityList() {
   if (!cityList) return;
   cityList.innerHTML = "";
 
-  /* Tri */
   if (sortSelect && sortSelect.value === "alpha") {
     cities.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sortSelect && sortSelect.value === "temp") {
@@ -607,7 +601,6 @@ async function loadCityWeather(ci) {
   )}, Lon ${ci.lon.toFixed(2)}`;
 
   try {
-    /* DEMANDE API MÉTÉO */
     const url =
       "https://api.open-meteo.com/v1/forecast" +
       `?latitude=${ci.lat}&longitude=${ci.lon}` +
@@ -812,7 +805,6 @@ function openDayOverlay(dayIndex) {
     });
   }
 
-  // on prépare les graphes
   drawSimpleLineChart(chartTemp, hours, temps, "°C");
   drawSimpleLineChart(chartRain, hours, rains, "mm");
   drawSimpleLineChart(chartWind, hours, winds, "km/h");
@@ -820,7 +812,6 @@ function openDayOverlay(dayIndex) {
     drawSimpleLineChart(chartHumidity, hours, humidities, "%");
   }
 
-  // onglet par défaut : température
   setActiveDayTab("temp");
 
   if (dayOverlay) {
@@ -883,7 +874,6 @@ if (dayTabTemp && dayTabRain && dayTabWind && dayTabHumidity) {
   dayTabHumidity.addEventListener("click", () => setActiveDayTab("humidity"));
 }
 
-/* clic sur une ligne de prévision */
 if (forecastList) {
   forecastList.addEventListener("click", (e) => {
     const item = e.target.closest(".forecast-item");
@@ -897,7 +887,6 @@ if (forecastList) {
 
 /* petit moteur de graphique maison */
 function drawSimpleLineChart(canvas, hours, values, unit) {
-  // Style Apple Health : courbe lisse sans points, avec abscisses/ordonnées.
   if (!canvas || !canvas.getContext || !hours.length) {
     const ctx = canvas && canvas.getContext && canvas.getContext("2d");
     if (ctx) {
@@ -954,7 +943,6 @@ function drawSimpleLineChart(canvas, hours, values, unit) {
     return paddingTop + plotHeight * (1 - ratio);
   }
 
-  // grille horizontale douce
   ctx.strokeStyle = gridColor;
   ctx.lineWidth = 1;
   const gridLines = 3;
@@ -966,7 +954,6 @@ function drawSimpleLineChart(canvas, hours, values, unit) {
     ctx.stroke();
   }
 
-  // axe Y
   ctx.strokeStyle = axisColor;
   ctx.lineWidth = 1.2;
   ctx.beginPath();
@@ -974,13 +961,11 @@ function drawSimpleLineChart(canvas, hours, values, unit) {
   ctx.lineTo(paddingLeft, paddingTop + plotHeight);
   ctx.stroke();
 
-  // axe X
   ctx.beginPath();
   ctx.moveTo(paddingLeft, paddingTop + plotHeight);
   ctx.lineTo(paddingLeft + plotWidth, paddingTop + plotHeight);
   ctx.stroke();
 
-  // courbe
   ctx.beginPath();
   ctx.lineWidth = 2;
   ctx.strokeStyle = isNight ? "rgba(255, 214, 107, 0.95)" : "rgba(79,141,255,0.95)";
@@ -1035,19 +1020,15 @@ function speech(txt) {
 }
 
 /* --------------------------------------------------------------------------
-   16. RADAR POPUP (RainViewer + Open-Meteo)
--------------------------------------------------------------------------- */
-
-/* --------------------------------------------------------------------------
    16. RADAR POPUP (RainViewer + Open-Meteo + Temp + Vent)
 -------------------------------------------------------------------------- */
 
 /**
  * - RainViewer : radar réel pour les 2 dernières heures (pluie).
  * - Open-Meteo : timeline animée pour les prochaines heures (pluie / vent / température).
- * - OpenWeather : tuiles vent / température si besoin.
- * - Bouton "Radar réel / Radar futur" pour basculer passé ↔ futur.
- * - Bouton "Résumé pluie -2 h" pour synthèse de la pluie récente.
+ * - OpenWeather : tuiles vent / température.
+ * - Bouton "Radar réel / Radar futur".
+ * - Bouton "Résumé pluie -2 h".
  */
 
 const OPENWEATHER_API_KEY = "c63f9893f5d21327a9c390818db9f240";
@@ -1076,7 +1057,6 @@ let radarTimelineTimer = null;
 let radarSummaryButton = null;
 const radarLegend = document.querySelector(".radar-legend");
 
-/* Création dynamique du bouton "Résumé pluie -2 h" */
 if (radarLegend) {
   radarSummaryButton = document.createElement("button");
   radarSummaryButton.id = "radar-summary-button";
@@ -1085,11 +1065,8 @@ if (radarLegend) {
   radarLegend.appendChild(radarSummaryButton);
 }
 
-/* --------------------------------------------------------------------------
-   16.1 – Utilitaires RainViewer & Open-Meteo
--------------------------------------------------------------------------- */
+/* 16.1 – Utilitaires RainViewer & Open-Meteo */
 
-/** Charge les méta-données RainViewer (dernières 2 h) si pas déjà fait */
 async function loadRainviewerMeta() {
   if (rainviewerMeta) return;
   try {
@@ -1098,7 +1075,6 @@ async function loadRainviewerMeta() {
     rainviewerMeta = data;
     rainviewerHost = data.host || "https://tilecache.rainviewer.com";
     if (data.radar && Array.isArray(data.radar.past)) {
-      // On garde les dernières ~2h (max ~12 frames)
       const arr = data.radar.past;
       rainviewerPastFrames = arr.slice(Math.max(0, arr.length - 12));
     }
@@ -1107,7 +1083,6 @@ async function loadRainviewerMeta() {
   }
 }
 
-/** Applique un frame RainViewer donné (index) */
 function applyRainviewerFrame(index) {
   if (!radarMapInstance || !rainviewerPastFrames.length) return;
 
@@ -1127,7 +1102,6 @@ function applyRainviewerFrame(index) {
   rainviewerTileLayer.addTo(radarMapInstance);
 }
 
-/** Démarre l'animation RainViewer (frames passées) */
 function startRainviewerAnimation() {
   stopRainviewerAnimation();
   if (!radarMapInstance || !rainviewerPastFrames.length) return;
@@ -1141,7 +1115,6 @@ function startRainviewerAnimation() {
   }, 650);
 }
 
-/** Stoppe l'animation RainViewer et enlève la couche */
 function stopRainviewerAnimation() {
   if (rainviewerAnimTimer) {
     clearInterval(rainviewerAnimTimer);
@@ -1153,7 +1126,6 @@ function stopRainviewerAnimation() {
   }
 }
 
-/** Retourne l'index de l'heure "maintenant" dans le tableau Open-Meteo */
 function getRadarBaseIndex(hourlyTimes) {
   const now = new Date();
   for (let i = 0; i < hourlyTimes.length; i++) {
@@ -1163,7 +1135,6 @@ function getRadarBaseIndex(hourlyTimes) {
   return 0;
 }
 
-/** Met à jour le label de fenêtre temporelle */
 function updateRadarWindowLabel(baseIndex, startIndex, horizonHours) {
   if (!radarWindowText) return;
   const diffHours = Math.max(0, startIndex - baseIndex);
@@ -1176,31 +1147,8 @@ function updateRadarWindowLabel(baseIndex, startIndex, horizonHours) {
   }
 }
 
-/** Initialise / recentre la carte Leaflet sur la ville sélectionnée */
-function ensureRadarMap() {
-  if (!selectedCity) return;
-  if (!radarMapInstance) {
-    radarMapInstance = L.map("radar-map", {
-      zoomControl: false,
-      attributionControl: false,
-    });
-  }
-   // Si aucune ville sélectionnée → vue monde
-if (!selectedCity || !selectedCity.lat || !selectedCity.lon) {
-    radarMapInstance.setView([20, 0], 3); // 🌍 zoom monde
-    return;
-}
+/* 16.1 bis – Carte Leaflet (vue monde + zoom ville) */
 
-  radarMapInstance.setView([selectedCity.lat, selectedCity.lon], 12);
-
-  if (!radarBaseLayer) {
-    radarBaseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 15,
-    });
-    radarBaseLayer.addTo(radarMapInstance);
-  }
-}
-/** Initialise / recentre la carte Leaflet sur la ville sélectionnée */
 function ensureRadarMap() {
   // 1. Création de la carte si besoin
   if (!radarMapInstance) {
@@ -1210,11 +1158,11 @@ function ensureRadarMap() {
     });
   }
 
-  // 2. Fond de carte OSM, permet zoom très proche ET vue monde
+  // 2. Fond de carte OSM : zoom proche ET vue monde
   if (!radarBaseLayer) {
     radarBaseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 15, // 🔥 zoom ville
-      minZoom: 2,  // 🌍 permet de dézoomer jusqu'au monde
+      maxZoom: 15, // zoom ville
+      minZoom: 2,  // vue monde
     });
     radarBaseLayer.addTo(radarMapInstance);
   }
@@ -1225,22 +1173,21 @@ function ensureRadarMap() {
     return;
   }
 
-  // 4. Si une ville est sélectionnée → zoom proche
+  // 4. Ville sélectionnée → zoom proche
   radarMapInstance.setView([selectedCity.lat, selectedCity.lon], 15);
 }
 
-/** Choix de la couche OpenWeather (vent / température / pluie) */
+/* 16.2 – Timeline radar (pluie / vent / température) */
+
 function getOpenWeatherLayerName() {
   if (radarVariable === "wind") return "wind_new";
   if (radarVariable === "temp") return "temp_new";
   return "precipitation_new";
 }
 
-/** Applique la couche OpenWeather (sauf si RainViewer est actif pour la pluie réelle) */
 function refreshOpenWeatherLayer() {
   if (!radarMapInstance) return;
 
-  // si pluie réelle = RainViewer gère l'overlay
   if (radarTemporalMode === "real" && radarVariable === "rain") {
     if (radarTileLayer) {
       radarMapInstance.removeLayer(radarTileLayer);
@@ -1267,7 +1214,6 @@ function refreshOpenWeatherLayer() {
   radarTileLayer.addTo(radarMapInstance);
 }
 
-/** Colorise un halo autour de la ville pour illustrer l'intensité locale */
 function updateFutureOverlay(variable, intensity) {
   if (!radarMapInstance || !selectedCity) return;
 
@@ -1277,7 +1223,7 @@ function updateFutureOverlay(variable, intensity) {
   }
 
   if (!intensity || intensity === 0) {
-    return; // pas de phénomène notable
+    return;
   }
 
   let fillColor = "rgba(79,141,255,0.25)";
@@ -1296,30 +1242,30 @@ function updateFutureOverlay(variable, intensity) {
     }
   } else if (variable === "wind") {
     if (intensity === 1) {
-      fillColor = "rgba(53,214,156,0.25)"; // vent faible
+      fillColor = "rgba(53,214,156,0.25)";
       fillOpacity = 0.25;
     } else if (intensity === 2) {
-      fillColor = "rgba(255,154,60,0.32)"; // vent modéré/fort
+      fillColor = "rgba(255,154,60,0.32)";
       fillOpacity = 0.32;
     } else if (intensity === 3) {
-      fillColor = "rgba(255,74,74,0.40)"; // tempête
+      fillColor = "rgba(255,74,74,0.40)";
       fillOpacity = 0.40;
     }
   } else if (variable === "temp") {
     if (intensity === 1) {
-      fillColor = "rgba(15,23,42,0.35)"; // très froid
+      fillColor = "rgba(15,23,42,0.35)";
       fillOpacity = 0.35;
     } else if (intensity === 2) {
-      fillColor = "rgba(251,191,36,0.32)"; // tempéré
+      fillColor = "rgba(251,191,36,0.32)";
       fillOpacity = 0.32;
     } else if (intensity === 3) {
-      fillColor = "rgba(185,28,28,0.40)"; // chaud / très chaud
+      fillColor = "rgba(185,28,28,0.40)";
       fillOpacity = 0.40;
     }
   }
 
   radarFutureOverlay = L.circle([selectedCity.lat, selectedCity.lon], {
-    radius: 25000, // ~25 km -> "zone locale" agrandissable via zoom
+    radius: 25000,
     color: "transparent",
     fillColor,
     fillOpacity,
@@ -1329,11 +1275,6 @@ function updateFutureOverlay(variable, intensity) {
   radarFutureOverlay.addTo(radarMapInstance);
 }
 
-/* --------------------------------------------------------------------------
-   16.2 – Timeline radar (pluie / vent / température)
--------------------------------------------------------------------------- */
-
-/** Ajoute les classes de mode (pluie / vent / temp) pour colorer la grille */
 function applyRadarGridModeClass() {
   if (!radarGrid) return;
   radarGrid.classList.remove("radar-grid-rain", "radar-grid-wind", "radar-grid-temp");
@@ -1342,7 +1283,6 @@ function applyRadarGridModeClass() {
   else if (radarVariable === "temp") radarGrid.classList.add("radar-grid-temp");
 }
 
-/** Dessine la timeline 12 cases selon la variable active */
 function renderRadarTimeline() {
   if (!radarGrid || !selectedCity) return;
   const data = weatherCache[selectedCity.name];
@@ -1351,23 +1291,18 @@ function renderRadarTimeline() {
   const h = data.hourly;
   const baseIndex = getRadarBaseIndex(h.time);
 
-  // HORIZON (en heures) selon la variable :
-  // - Pluie futur : +3 h (simulation) / 12 cases
-  // - Vent/Temp : fenêtre de 12 h dans un horizon jusqu'à +36 h
   let horizonHours = 12;
   let maxOffset = 0;
 
   if (radarVariable === "rain") {
     if (radarTemporalMode === "future") {
-      // Pluie future : fenêtre de 3 h (12 pas de 15 min) avec slider actif
-      horizonHours = 3; 
+      horizonHours = 3;
       maxOffset = 12;
     } else {
       horizonHours = 12;
       maxOffset = Math.min(12, Math.max(0, h.time.length - baseIndex - horizonHours));
     }
   } else {
-    // vent / température : horizon étendu à +36 h, fenêtre de 12 h
     const maxPossible = Math.max(0, h.time.length - baseIndex - horizonHours);
     maxOffset = Math.min(36, maxPossible);
   }
@@ -1400,25 +1335,27 @@ function renderRadarTimeline() {
 
     if (radarVariable === "rain") {
       value =
-        (h.rain && h.rain[idx] != null)
+        h.rain && h.rain[idx] != null
           ? h.rain[idx]
-          : (h.precipitation && h.precipitation[idx] != null
-              ? h.precipitation[idx]
-              : 0);
+          : h.precipitation && h.precipitation[idx] != null
+          ? h.precipitation[idx]
+          : 0;
       if (value === 0) intensity = 0;
       else if (value < 0.2) intensity = 1;
       else if (value < 1) intensity = 2;
       else intensity = 3;
     } else if (radarVariable === "wind") {
-      value = h.wind_speed_10m && h.wind_speed_10m[idx] != null ? h.wind_speed_10m[idx] : 0;
-      if (value < 15) intensity = 1;          // vent faible
-      else if (value < 35) intensity = 2;     // vent modéré / fort
-      else intensity = 3;                     // tempête
+      value =
+        h.wind_speed_10m && h.wind_speed_10m[idx] != null ? h.wind_speed_10m[idx] : 0;
+      if (value < 15) intensity = 1;
+      else if (value < 35) intensity = 2;
+      else intensity = 3;
     } else if (radarVariable === "temp") {
-      value = h.temperature_2m && h.temperature_2m[idx] != null ? h.temperature_2m[idx] : 0;
-      if (value < 0) intensity = 1;           // très froid
-      else if (value < 20) intensity = 2;     // tempéré
-      else intensity = 3;                     // chaud / très chaud
+      value =
+        h.temperature_2m && h.temperature_2m[idx] != null ? h.temperature_2m[idx] : 0;
+      if (value < 0) intensity = 1;
+      else if (value < 20) intensity = 2;
+      else intensity = 3;
     }
 
     const hourLabel = time.getHours().toString().padStart(2, "0") + "h";
@@ -1437,7 +1374,6 @@ function renderRadarTimeline() {
     }
   }
 
-  // mise à jour du halo local
   if (radarTemporalMode === "future") {
     updateFutureOverlay(radarVariable, overlayIntensity);
   } else if (radarFutureOverlay && radarMapInstance) {
@@ -1446,7 +1382,6 @@ function renderRadarTimeline() {
   }
 }
 
-/** Recentrage sur "maintenant" + reset slider */
 function resetRadarTimelineToNow() {
   if (!selectedCity) return;
   const data = weatherCache[selectedCity.name];
@@ -1459,7 +1394,6 @@ function resetRadarTimelineToNow() {
   let maxOffset = 0;
 
   if (radarVariable === "rain" && radarTemporalMode === "future") {
-    // Pluie future : fenêtre de 3 h (12 pas) et slider actif
     horizonHours = 3;
     maxOffset = 12;
   } else if (radarVariable === "rain") {
@@ -1481,11 +1415,8 @@ function resetRadarTimelineToNow() {
   renderRadarTimeline();
 }
 
-/* --------------------------------------------------------------------------
-   16.3 – Pluie / Vent / Temp : changement d'onglet & ouverture radar
--------------------------------------------------------------------------- */
+/* 16.3 – Pluie / Vent / Temp : changement d'onglet & ouverture radar */
 
-/** Tabs Pluie / Vent / Températures */
 function setRadarMode(kind) {
   radarVariable = kind;
   applyRadarGridModeClass();
@@ -1500,7 +1431,6 @@ function setRadarMode(kind) {
     else if (kind === "temp") radarTabTemp.classList.add("radar-tab-active");
   }
 
-  // Pluie réelle = RainViewer ; le reste = OpenWeather + Open-Meteo
   if (radarTemporalMode === "real" && radarVariable === "rain") {
     loadRainviewerMeta().then(() => {
       startRainviewerAnimation();
@@ -1513,7 +1443,6 @@ function setRadarMode(kind) {
   resetRadarTimelineToNow();
 }
 
-/** Ouverture de l'overlay Radar */
 function openRadarOverlay() {
   if (!selectedCity) {
     showToast("Ajoute d'abord une ville pour afficher le radar.");
@@ -1545,14 +1474,8 @@ function openRadarOverlay() {
   }, 60);
 }
 
-/* --------------------------------------------------------------------------
-   16.4 – Résumé pluie des 2 dernières heures (basé sur Open-Meteo)
--------------------------------------------------------------------------- */
+/* 16.4 – Résumé pluie des 2 dernières heures */
 
-/**
- * Résumé textuel simple de l'activité pluvieuse des 2 dernières heures,
- * en utilisant les données horaires Open-Meteo autour de "maintenant".
- */
 function summarizePastRain() {
   if (!selectedCity) {
     showToast("Aucune ville sélectionnée.", "error");
@@ -1579,11 +1502,11 @@ function summarizePastRain() {
     const t = times[i];
     if (t >= twoHoursAgo && t <= now) {
       const val =
-        (h.rain && h.rain[i] != null)
+        h.rain && h.rain[i] != null
           ? h.rain[i]
-          : (h.precipitation && h.precipitation[i] != null
-              ? h.precipitation[i]
-              : 0);
+          : h.precipitation && h.precipitation[i] != null
+          ? h.precipitation[i]
+          : 0;
       if (val > 0) {
         totalRain += val;
         maxRain = Math.max(maxRain, val);
@@ -1598,7 +1521,10 @@ function summarizePastRain() {
     return;
   }
 
-  const formatHour = (d) => d.getHours().toString().padStart(2, "0") + "h" + d.getMinutes().toString().padStart(2, "0");
+  const formatHour = (d) =>
+    d.getHours().toString().padStart(2, "0") +
+    "h" +
+    d.getMinutes().toString().padStart(2, "0");
 
   let maxLabel = "";
   if (maxRain < 0.2) maxLabel = "faible";
@@ -1612,11 +1538,8 @@ function summarizePastRain() {
   showToast(msg, "success");
 }
 
-/* --------------------------------------------------------------------------
-   16.5 – Animation timeline & écouteurs
--------------------------------------------------------------------------- */
+/* 16.5 – Animation timeline & écouteurs */
 
-/** Démarre l'animation de la timeline Open-Meteo (mode futur) */
 function startRadarTimelineAnimation() {
   if (!radarTimelineSlider) return;
   radarTimelinePlaying = true;
@@ -1639,7 +1562,6 @@ function startRadarTimelineAnimation() {
   }, 900);
 }
 
-/** Stoppe l'animation de la timeline */
 function stopRadarTimelineAnimation() {
   radarTimelinePlaying = false;
   radarPlay.textContent = "▶︎";
@@ -1681,7 +1603,6 @@ if (radarTimelineSlider) {
   });
 }
 
-/** Bouton unique qui alterne Radar réel / Radar futur */
 if (radarModeToggle) {
   radarModeToggle.addEventListener("click", () => {
     radarTemporalMode = radarTemporalMode === "real" ? "future" : "real";
@@ -1689,13 +1610,11 @@ if (radarModeToggle) {
       radarTemporalMode === "real" ? "Radar réel" : "Radar futur";
 
     if (radarTemporalMode === "real" && radarVariable === "rain") {
-      // Pluie réelle : RainViewer
       stopRadarTimelineAnimation();
       loadRainviewerMeta().then(() => {
         startRainviewerAnimation();
       });
     } else {
-      // Futur ou autres variables : OpenWeather + timeline
       stopRainviewerAnimation();
       refreshOpenWeatherLayer();
       resetRadarTimelineToNow();
@@ -1703,11 +1622,9 @@ if (radarModeToggle) {
   });
 }
 
-/** Play / pause de la timeline Open-Meteo (surtout utile en mode futur) */
 if (radarPlay) {
   radarPlay.addEventListener("click", () => {
     if (radarTemporalMode === "real" && radarVariable === "rain") {
-      // On bascule automatiquement en futur pour l'animation timeline
       radarTemporalMode = "future";
       radarModeToggle.textContent = "Radar futur";
       stopRainviewerAnimation();
@@ -1723,11 +1640,9 @@ if (radarPlay) {
   });
 }
 
-/** Bouton résumé pluie -2 h */
 if (radarSummaryButton) {
   radarSummaryButton.addEventListener("click", summarizePastRain);
 }
-
 
 /* --------------------------------------------------------------------------
    17. INITIALISATION
