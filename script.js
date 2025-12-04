@@ -1381,6 +1381,21 @@ function renderRadarTimeline() {
     radarFutureOverlay = null;
   }
 }
+function updateRadarLegend() {
+  const lr = document.querySelector(".legend-rain");
+  const lw = document.querySelector(".legend-wind");
+  const lt = document.querySelector(".legend-temp");
+
+  if (!lr || !lw || !lt) return;
+
+  lr.classList.add("hidden");
+  lw.classList.add("hidden");
+  lt.classList.add("hidden");
+
+  if (radarVariable === "rain") lr.classList.remove("hidden");
+  if (radarVariable === "wind") lw.classList.remove("hidden");
+  if (radarVariable === "temp") lt.classList.remove("hidden");
+}
 
 function resetRadarTimelineToNow() {
   if (!selectedCity) return;
@@ -1420,6 +1435,7 @@ function resetRadarTimelineToNow() {
 function setRadarMode(kind) {
   radarVariable = kind;
   applyRadarGridModeClass();
+   updateRadarLegend();
 
   if (radarTabRain && radarTabWind && radarTabTemp) {
     radarTabRain.classList.remove("radar-tab-active");
