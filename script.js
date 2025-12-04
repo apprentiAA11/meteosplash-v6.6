@@ -1200,6 +1200,34 @@ if (!selectedCity || !selectedCity.lat || !selectedCity.lon) {
     radarBaseLayer.addTo(radarMapInstance);
   }
 }
+/** Initialise / recentre la carte Leaflet sur la ville sélectionnée */
+function ensureRadarMap() {
+  // 1. Création de la carte si besoin
+  if (!radarMapInstance) {
+    radarMapInstance = L.map("radar-map", {
+      zoomControl: false,
+      attributionControl: false,
+    });
+  }
+
+  // 2. Fond de carte OSM, permet zoom très proche ET vue monde
+  if (!radarBaseLayer) {
+    radarBaseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18, // 🔥 autorise zoom ville précis
+      minZoom: 2,  // 🌍 permet de dézoomer jusqu'au monde
+    });
+    radarBaseLayer.addTo(radarMapInstance);
+  }
+
+  // 3. Si aucune ville → vue monde
+  if (!selectedCity || !selectedCity.lat || !selectedCity.lon) {
+    radarMapInstance.setView([20, 0], 3);
+    return;
+  }
+
+  // 4. Si une ville est sélectionnée → zoom proche
+  radarMapInstance.setView([selectedCity.lat, selectedCity.lon], 15);
+}
 
 /** Choix de la couche OpenWeather (vent / température / pluie) */
 function getOpenWeatherLayerName() {
