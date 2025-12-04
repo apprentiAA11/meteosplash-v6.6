@@ -1185,7 +1185,7 @@ function ensureRadarMap() {
       attributionControl: false,
     });
   }
-  radarMapInstance.setView([selectedCity.lat, selectedCity.lon], 8);
+  radarMapInstance.setView([selectedCity.lat, selectedCity.lon], 15);
 
   if (!radarBaseLayer) {
     radarBaseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
